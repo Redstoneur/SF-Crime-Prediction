@@ -1,5 +1,5 @@
 # Utilisez une image de Node.js pour l'environnement de développement
-FROM node:18
+FROM node:18-alpine
 
 # installe un simple serveur http pour servir un contenu statique
 RUN npm install -g http-server
