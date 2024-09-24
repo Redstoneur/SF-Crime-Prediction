@@ -1,0 +1,16 @@
+services:
+  api:
+    build:
+      context: ./AI
+      dockerfile: Dockerfile
+    container_name: AI
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0' # Limite à 1 CPU
+          memory: '512M' # Limite à 512 MB de RAM
+        reservations:
+          cpus: '0.5' # Réservation de 0.5 CPU
+          memory: '256M' # Réservation de 256 MB de RAM
