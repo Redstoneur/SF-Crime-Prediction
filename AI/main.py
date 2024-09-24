@@ -18,7 +18,13 @@ class MyAPI(FastAPI):
         """
         Initialise l'application FastAPI et ajoute les routes.
         """
-        super().__init__()
+        super().__init__(
+            title="SF-Crime-Prediction-AI",
+            description="API pour prédire les crimes à San Francisco",
+            version="1.0.0",
+            docs_url="/docs",  # URL pour Swagger UI
+            redoc_url="/redoc" # URL pour ReDoc
+        )
         self.add_routes()
 
     def add_routes(self):
