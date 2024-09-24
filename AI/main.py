@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from fastapi import FastAPI
 from pydantic import BaseModel
+
 
 class Date(BaseModel):
     """
@@ -12,6 +15,13 @@ class Date(BaseModel):
     minute: int
     seconde: int
 
+    def __str__(self):
+        """
+        Retourne une chaîne de caractères représentant la date.
+        """
+        return f"{self.annee}-{self.mois}-{self.jour} {self.heure}:{self.minute}:{self.seconde}"
+
+
 class Position(BaseModel):
     """
     Modèle Pydantic représentant une position avec des attributs de latitude et de longitude.
@@ -19,12 +29,12 @@ class Position(BaseModel):
     latitude: float
     longitude: float
 
+
 class Crime(BaseModel):
     """
     Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
     """
     dates: Date
-    joursDeLaSemaine: str
     pdDistrict: str
     adresse: str
     position: Position
@@ -65,11 +75,23 @@ class MyAPI(FastAPI):
             """
             Point de terminaison POST qui prédit le crime à San Francisco en fonction des attributs de crime fournis.
             """
+            data = {
+                "dates": crime.dates.__str__(),
+                "joursDeLaSemaine": datetime.strptime(crime.dates.__str__(), "%Y-%m-%d %H:%M:%S").strftime("%A"),
+                "pdDistrict": crime.pdDistrict,
+                "adresse": crime.adresse,
+                "x": str(crime.position.latitude),
+                "y": str(crime.position.longitude)
+            }
+
             # Prédire le crime à San Francisco
-            prediction = str(crime)
+            prediction = "EN COURS DE DÉVELOPPEMENT"
 
             # Retourner la prédiction
-            return {"prediction": prediction}
+            return {
+                "prediction": prediction,
+                "data": data
+            }
 
 
 # Crée une instance de l'application FastAPI
