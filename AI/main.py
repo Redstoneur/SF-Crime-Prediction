@@ -1,12 +1,33 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+class Date(BaseModel):
+    """
+    Modèle Pydantic représentant une date avec des attributs d'année, de mois et de jour.
+    """
+    annee: int
+    mois: int
+    jour: int
+    heure: int
+    minute: int
+    seconde: int
 
-class User(BaseModel):
+class Position(BaseModel):
     """
-    Modèle Pydantic représentant un utilisateur avec un attribut nom.
+    Modèle Pydantic représentant une position avec des attributs de latitude et de longitude.
     """
-    name: str
+    latitude: float
+    longitude: float
+
+class Crime(BaseModel):
+    """
+    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
+    """
+    dates: Date
+    joursDeLaSemaine: str
+    pdDistrict: str
+    adresse: str
+    position: Position
 
 
 class MyAPI(FastAPI):
@@ -23,7 +44,7 @@ class MyAPI(FastAPI):
             description="API pour prédire les crimes à San Francisco",
             version="1.0.0",
             docs_url="/docs",  # URL pour Swagger UI
-            redoc_url="/redoc" # URL pour ReDoc
+            redoc_url="/redoc"  # URL pour ReDoc
         )
         self.add_routes()
 
@@ -39,31 +60,17 @@ class MyAPI(FastAPI):
             """
             return {"message": "Bonjour, le monde!"}
 
-        @self.get("/hello/{name}")
-        def say_hello(name: str):
+        @self.post("/predict")
+        def predict_crime(crime: Crime):
             """
-            Point de terminaison GET qui retourne un message de salutation personnalisé.
-
-            Args:
-                name (str): Le nom de la personne à saluer.
-
-            Returns:
-                dict: Un dictionnaire contenant le message de salutation.
+            Point de terminaison POST qui prédit le crime à San Francisco en fonction des attributs de crime fournis.
             """
-            return {"message": f"Bonjour, {name}!"}
+            # Prédire le crime à San Francisco
+            prediction = str(crime)
 
-        @self.post("/welcome")
-        def welcome_user(user: User):
-            """
-            Point de terminaison POST qui souhaite la bienvenue à un utilisateur.
+            # Retourner la prédiction
+            return {"prediction": prediction}
 
-            Args:
-                user (User): Un objet User contenant le nom de l'utilisateur.
-
-            Returns:
-                dict: Un dictionnaire contenant le message de bienvenue.
-            """
-            return {"message": f"Bienvenue, {user.name}!"}
 
 # Crée une instance de l'application FastAPI
 app = MyAPI()
