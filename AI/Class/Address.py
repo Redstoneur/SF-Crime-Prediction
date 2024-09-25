@@ -12,6 +12,7 @@ class Address:
         :param addr: Adresse à vérifier.
         """
         self.address = addr
+        self.address_location = None
         self.latitude = None
         self.longitude = None
         self.valid = False
@@ -26,6 +27,7 @@ class Address:
             geolocator = Nominatim(user_agent="geo_checker")
             location = geolocator.geocode(self.address)
             if location:
+                self.address_location = location.address
                 self.valid = True
                 self.latitude = location.latitude
                 self.longitude = location.longitude
@@ -80,5 +82,6 @@ if __name__ == "__main__":
         adr = Address(address)
         print(adr)
         if adr.is_valid():
+            print(f"Adresse_location : {adr.address_location}")
             print(f"Latitude : {adr.latitude}, Longitude : {adr.longitude}")
         print()
