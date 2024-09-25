@@ -8,25 +8,25 @@ Il faut deux fichiers csv. Un fichier pour les données d'entraînement `train.c
 
 Le fichier train.csv contient les colonnes suivantes :
 
-- Dates: date et heure de l'incident
-- Category: catégorie de l'incident
-- Descript: description de l'incident
-- DayOfWeek: jour de la semaine
-- PdDistrict: district de police
-- Resolution: résolution de l'incident
-- Address: adresse de l'incident
-- X: longitude
-- Y: latitude
+- Dates : date et heure de l'incident
+- Category : catégorie de l'incident
+- Descript : description de l'incident
+- DayOfWeek : jour de la semaine
+- PdDistrict : district de police
+- Resolution : résolution de l'incident
+- Address : adresse de l'incident
+- X : longitude
+- Y : latitude
 
 Le fichier test.csv contient les colonnes suivantes :
 
-- Id: identifiant unique de l'incident
-- Dates: date et heure de l'incident
-- DayOfWeek: jour de la semaine
-- PdDistrict: district de police
-- Address: adresse de l'incident
-- X: longitude
-- Y: latitude
+- Id : identifiant unique de l'incident
+- Dates : date et heure de l'incident
+- DayOfWeek : jour de la semaine
+- PdDistrict : district de police
+- Address : adresse de l'incident
+- X : longitude
+- Y : latitude
 
 ## Source
 
