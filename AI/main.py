@@ -50,14 +50,6 @@ class Date(BaseModel):
             return False
 
 
-class Position(BaseModel):
-    """
-    Modèle Pydantic représentant une position avec des attributs de latitude et de longitude.
-    """
-    latitude: float
-    longitude: float
-
-
 class Crime(BaseModel):
     """
     Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
@@ -65,7 +57,6 @@ class Crime(BaseModel):
     dates: Date
     pdDistrict: str
     adresse: str
-    position: Position
 
 
 class MyAPI(FastAPI):
@@ -130,13 +121,21 @@ class MyAPI(FastAPI):
                                            "]"
                                     )
 
+            # Création de l'adresse
+            addr = Address(crime.adresse)
+
+            # Vérification de la validité de l'adresse
+            if not addr.is_valid():
+                # Retourner une erreur si l'adresse est invalide
+                raise HTTPException(status_code=400, detail="L'adresse est invalide.")
+
             data: dict[str, str] = {
                 "dates": crime.dates.__str__(),
                 "joursDeLaSemaine": crime.dates.__dayOfWeek__(),
                 "pdDistrict": crime.pdDistrict,
-                "adresse": crime.adresse,
-                "x": str(crime.position.latitude),
-                "y": str(crime.position.longitude)
+                "adresse": addr.address,
+                "x": str(addr.latitude),
+                "y": str(addr.longitude)
             }
 
             # Prédire le crime à San Francisco
