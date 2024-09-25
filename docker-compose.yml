@@ -45,7 +45,7 @@ services:
           cpus: '0.5' # Réservation de 0.5 CPU
           memory: '256M' # Réservation de 256 MB de RAM
     environment:
-      - SERVER_URL=http://172.18.0.10:5000
+      - SERVER_URL=http://172.18.0.10:8000
       - TZ=Europe/Paris
       - "/etc/localtime:/etc/localtime:ro"
       - "/etc/timezone:/etc/timezone:ro"
