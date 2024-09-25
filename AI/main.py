@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from Class.Address import Address
@@ -49,8 +50,23 @@ class Date(BaseModel):
         except ValueError:
             return False
 
+class Position(BaseModel):
+    """
+    Modèle Pydantic représentant une position avec des attributs de latitude et de longitude.
+    """
+    latitude: float
+    longitude: float
 
 class Crime(BaseModel):
+    """
+    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
+    """
+    dates: Date
+    pdDistrict: str
+    adresse: str
+    position: Position
+
+class Crime2(BaseModel):
     """
     Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
     """
@@ -98,12 +114,50 @@ class MyAPI(FastAPI):
             return {
                 "address": addr.address,
                 "valid": addr.is_valid(),
+                "adresse_location": addr.address_location,
                 "latitude": addr.latitude,
                 "longitude": addr.longitude
             }
 
         @self.post("/predict")
         def predict_crime(crime: Crime):
+            """
+            Point de terminaison POST qui prédit l'issue de l'enquête d'un crime à San Francisco.
+            """
+
+            if not crime.dates.__isValide__():
+                # Retourner une erreur si la date est invalide
+                raise HTTPException(status_code=400, detail="La date est invalide.")
+
+            if crime.pdDistrict == "" or crime.adresse == "":
+                # Retourner une erreur si les informations
+                raise HTTPException(status_code=400,
+                                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
+                                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
+                                           ("adresse, " if crime.adresse == "" else "") +
+                                           "]"
+                                    )
+
+            data: dict[str, str] = {
+                "dates": crime.dates.__str__(),
+                "joursDeLaSemaine": crime.dates.__dayOfWeek__(),
+                "pdDistrict": crime.pdDistrict,
+                "adresse": crime.adresse,
+                "x": str(crime.position.latitude),
+                "y": str(crime.position.longitude)
+            }
+
+            # Prédire le crime à San Francisco
+            prediction = "EN COURS DE DÉVELOPPEMENT"
+
+            # Retourner la prédiction
+            return {
+                "prediction": prediction,
+                "data": data
+            }
+
+        @self.post("/predict2")
+        def predict_crime2(crime: Crime2):
             """
             Point de terminaison POST qui prédit l'issue de l'enquête d'un crime à San Francisco.
             """
