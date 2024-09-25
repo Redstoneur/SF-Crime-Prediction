@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 
@@ -18,8 +18,34 @@ class Date(BaseModel):
     def __str__(self):
         """
         Retourne une chaîne de caractères représentant la date.
+        :return: Chaîne de caractères représentant la date.
         """
         return f"{self.annee}-{self.mois}-{self.jour} {self.heure}:{self.minute}:{self.seconde}"
+
+    def __datetime__(self):
+        """
+        Retourne un objet datetime représentant la date.
+        :return: Objet datetime représentant la date.
+        """
+        return datetime.strptime(self.__str__(), "%Y-%m-%d %H:%M:%S")
+
+    def __dayOfWeek__(self):
+        """
+        Retourne le jour de la semaine.
+        :return: Jour de la semaine.
+        """
+        return self.__datetime__().strftime("%A")
+
+    def __isValide__(self):
+        """
+        Vérifie si la date est valide.
+        :return: True si la date est valide, False sinon.
+        """
+        try:
+            self.__datetime__()
+            return True
+        except ValueError:
+            return False
 
 
 class Position(BaseModel):
@@ -73,11 +99,25 @@ class MyAPI(FastAPI):
         @self.post("/predict")
         def predict_crime(crime: Crime):
             """
-            Point de terminaison POST qui prédit le crime à San Francisco en fonction des attributs de crime fournis.
+            Point de terminaison POST qui prédit l'issue de l'enquête d'un crime à San Francisco.
             """
-            data = {
+
+            if not crime.dates.__isValide__():
+                # Retourner une erreur si la date est invalide
+                raise HTTPException(status_code=400, detail="La date est invalide.")
+
+            if crime.pdDistrict == "" or crime.adresse == "":
+                # Retourner une erreur si les informations
+                raise HTTPException(status_code=400,
+                                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
+                                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
+                                           ("adresse, " if crime.adresse == "" else "") +
+                                           "]"
+                                    )
+
+            data: dict[str, str] = {
                 "dates": crime.dates.__str__(),
-                "joursDeLaSemaine": datetime.strptime(crime.dates.__str__(), "%Y-%m-%d %H:%M:%S").strftime("%A"),
+                "joursDeLaSemaine": crime.dates.__dayOfWeek__(),
                 "pdDistrict": crime.pdDistrict,
                 "adresse": crime.adresse,
                 "x": str(crime.position.latitude),
