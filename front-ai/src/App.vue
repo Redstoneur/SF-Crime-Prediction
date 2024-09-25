@@ -1,41 +1,152 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import axios, { AxiosResponse } from "axios";
+import { ref } from "vue";
+
+const date = ref<string>(""); // Valeur initiale vide
+const pdDistrict = ref<string>("");
+const adresse = ref<string>("");
+const longitude = ref<number | null>();
+const latitude = ref<number | null>();
+
+interface DateCustom {
+  annee: number;
+  mois: number;
+  jour: number;
+  heure: number;
+  minute: number;
+  seconde: number;
+}
+
+interface Position {
+  longitude: number;
+  latitude: number;
+}
+
+interface PostData {
+  dates: DateCustom;
+  pdDistrict: string;
+  adresse: string;
+  position: Position;
+}
+
+interface ApiResponse {
+  prediction: object;
+  data: object;
+}
+
+// Fonction pour formater la date dans le format requis
+const formatDateObject = (dateStr: string) => {
+  if (!dateStr) {
+    return {
+      annee: 0,
+      mois: 0,
+      jour: 0,
+      heure: 0,
+      minute: 0,
+      seconde: 0,
+    };
+  }
+
+  const dateObj = new Date(dateStr);
+  return {
+    annee: dateObj.getFullYear(),
+    mois: dateObj.getMonth() + 1, // Les mois sont indexés à partir de 0 en JavaScript
+    jour: dateObj.getDate(),
+    heure: dateObj.getHours(),
+    minute: dateObj.getMinutes(),
+    seconde: dateObj.getSeconds(),
+  };
+};
+
+const submitData = (e: Event) => {
+  e.preventDefault();
+
+  // Formater la date sous l'objet requis
+  const formattedDate = formatDateObject(date.value);
+  const position = {
+    longitude: longitude.value,
+    latitude: latitude.value,
+  };
+
+  // Simuler l'envoi des données
+  const data = {
+    dates: formattedDate,
+    pdDistrict: pdDistrict.value,
+    adresse: adresse.value,
+    position,
+  };
+
+  async function postData(url: string, data: PostData): Promise<ApiResponse> {
+    try {
+      const response: AxiosResponse<ApiResponse> = await axios.post(url, data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error message:", error.message);
+        throw new Error("Erreur lors de l'envoi des données");
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Erreur inattendue");
+      }
+    }
+  }
+
+  //axios.post("http://127.0.0.1:8000/predict", data);
+
+  postData("http://127.0.0.1:8000/predict", <PostData>data)
+    .then((response) => {
+      console.log("Response from API:", response);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+  pdDistrict.value = "";
+  adresse.value = "";
+  longitude.value = null;
+  latitude.value = null;
+};
+</script>
 
 <template>
   <div class="container">
     <h1>Front de l'application</h1>
+    {{ date }}
 
-    <form action="">
+    <form @submit="submitData">
       <div class="form-group">
         <label for="date">Horodatage de l'incident criminel</label>
-        <input type="date" name="date" id="date" />
-      </div>
 
-      <div class="form-group">
-        <label for="day">Jour de la semaine</label>
-        <input type="text" name="day" id="day" />
+        <input type="datetime-local" name="date" id="date" v-model="date" />
       </div>
 
       <div class="form-group">
         <label for="nom">Nom du district de police</label>
-        <input type="text" name="nom" id="nom" />
+        <input type="text" name="nom" id="nom" v-model="pdDistrict" />
       </div>
 
       <div class="form-group">
         <label for="adresse"
           >Adresse approximative de l'incident criminel</label
         >
-        <input type="text" name="adresse" id="adresse" />
+        <input type="text" name="adresse" id="adresse" v-model="adresse" />
       </div>
 
       <div class="form-group">
         <label for="longitude">Longitude</label>
-        <input type="text" name="longitude" id="longitude" />
+        <input
+          type="number"
+          name="longitude"
+          id="longitude"
+          v-model="longitude"
+        />
       </div>
 
       <div class="form-group">
         <label for="latitude">Latitude</label>
-        <input type="text" name="latitude" id="latitude" />
+        <input type="number" name="latitude" id="latitude" v-model="latitude" />
       </div>
+
+      <button type="submit">Envoyer</button>
     </form>
   </div>
 </template>
