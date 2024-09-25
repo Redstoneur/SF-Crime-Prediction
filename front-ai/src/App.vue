@@ -93,7 +93,7 @@ const submitData = (e: Event) => {
 
   //axios.post("http://127.0.0.1:8000/predict", data);
 
-  postData("http://127.0.0.1:8000/predict", <PostData>data)
+  postData("http://localhost:8000/predict", <PostData>data)
     .then((response) => {
       console.log("Response from API:", response);
     })
