@@ -20,9 +20,9 @@ class Date(BaseModel):
     def __str__(self):
         """
         Retourne une chaîne de caractères représentant la date.
-        :return: Chaîne de caractères représentant la date.
+        :return: Chaîne de caractères représentant la date au format "AAAA-MM-JJ HH:MM:SS".
         """
-        return f"{self.annee}-{self.mois}-{self.jour} {self.heure}:{self.minute}:{self.seconde}"
+        return f"{self.annee}-{self.mois:02d}-{self.jour:02d} {self.heure:02d}:{self.minute:02d}:{self.seconde:02d}"
 
     def __datetime__(self):
         """
