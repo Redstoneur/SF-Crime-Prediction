@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from Class.Address import Address
@@ -90,6 +91,13 @@ class MyAPI(FastAPI):
             version="1.0.0",
             docs_url="/docs",  # URL pour Swagger UI
             redoc_url="/redoc"  # URL pour ReDoc
+        )
+        self.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],  # Permettre toutes les origines, à ajuster selon vos besoins
+            allow_credentials=True,
+            allow_methods=["*"],  # Permettre toutes les méthodes HTTP
+            allow_headers=["*"],  # Permettre tous les en-têtes
         )
         self.add_routes()
 
