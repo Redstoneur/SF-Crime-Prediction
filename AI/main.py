@@ -3,6 +3,8 @@ from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+from Class.Address import Address
+
 
 class Date(BaseModel):
     """
@@ -95,6 +97,19 @@ class MyAPI(FastAPI):
             Point de terminaison GET qui retourne un message de bienvenue.
             """
             return {"message": "Bonjour, le monde!"}
+
+        @self.get("/address")
+        def check_address(address: str):
+            """
+            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude et sa longitude.
+            """
+            addr = Address(address)
+            return {
+                "address": addr.address,
+                "valid": addr.is_valid(),
+                "latitude": addr.latitude,
+                "longitude": addr.longitude
+            }
 
         @self.post("/predict")
         def predict_crime(crime: Crime):
