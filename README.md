@@ -65,6 +65,9 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
 
 #### Sans Docker
 
+> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le fichier [information.md](AI/Dataset/information.md) pour plus de détails.
+
+
 1. **Cloner le dépôt :**
 
    ```sh
@@ -89,13 +92,15 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
    npm install
    npm run dev
    ```
-   
+
 4. **Accès à l'Application :**
 
     - **Front-end :** voir la console pour l'adresse, généralement [http://localhost:5173](http://localhost:5173)
     - **Back-end :** [http://localhost:8000](http://localhost:8000)
 
 #### Avec Docker
+
+> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le fichier [information.md](AI/Dataset/information.md) pour plus de détails.
 
 1. **Cloner le dépôt :**
 
