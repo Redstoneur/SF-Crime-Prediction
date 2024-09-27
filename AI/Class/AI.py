@@ -60,9 +60,11 @@ class AI:
         self.train_file_path = os.path.join(directory, train_file)
         self.test_file_path = os.path.join(directory, test_file)
 
+        # Lire les fichiers CSV dans des DataFrames pandas
         self.df_train = pd.read_csv(self.train_file_path)
         self.df_test = pd.read_csv(self.test_file_path)
 
+        # Vérifier si l'un des DataFrames est vide
         if self.df_test is None or self.df_train is None:
             raise Exception("L'un des DataFrames est vide")
 
@@ -80,15 +82,18 @@ class AI:
                 ['LOCATED', 'UNFOUNDED']), 'Categorie'] = self.prediction_mapping[2]
         self.df_train.loc[self.df_train['Resolution'].isin(['NONE']), 'Categorie'] = self.prediction_mapping[3]
 
+        # Créer des sous-ensembles des DataFrames pour l'entraînement et le test
         df_train_patch = self.df_train[['Dates', 'Categorie', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']]
         df_test_patch = self.df_test[
             ['Dates', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']
         ]  # todo : vérifier si c'est correct
 
+        # Encoder les caractéristiques catégorielles
         categorical_features = [col for col in df_train_patch.columns if self.df_train[col].dtype == 'object']
         self.encoder = OrdinalEncoder(cols=categorical_features).fit(df_train_patch)
         df_train_patch_2 = self.encoder.transform(df_train_patch)
 
+        # Échantillonner les données pour équilibrer les classes
         nb = 25000
         df_train_patch_sample = pd.concat([
             df_train_patch_2[df_train_patch_2.Categorie == i].sample(
@@ -96,21 +101,22 @@ class AI:
             for i in range(4)
         ])
 
+        # Séparer les caractéristiques (X) et les étiquettes (y)
         y = df_train_patch_sample.Categorie
         X = df_train_patch_sample.drop(['Categorie'], axis=1)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-        # Arbre de décision
+        # Entraîner un arbre de décision
         self.clf = tree.DecisionTreeClassifier().fit(X_train, y_train)
         self.acctree = self.clf.score(X_test, y_test) * 100
         print(f'Précision de l\'arbre de décision: {self.acctree:.2f}%')
 
-        # Forêt aléatoire
+        # Entraîner une forêt aléatoire
         self.rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42).fit(X_train, y_train)
         self.accrf = accuracy_score(y_test, self.rf_classifier.predict(X_test)) * 100
         print(f'Précision de la forêt aléatoire: {self.accrf:.2f}%')
 
-        # K-Nearest Neighbors
+        # Entraîner un K-Nearest Neighbors
         self.knn = KNeighborsClassifier(n_neighbors=2).fit(X_train, y_train)
         self.accknn = accuracy_score(y_test, self.knn.predict(X_test)) * 100
         print(f'Précision du KNN: {self.accknn:.2f}%')
