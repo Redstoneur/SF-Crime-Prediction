@@ -13,6 +13,9 @@ from sklearn.neighbors import KNeighborsClassifier
 
 
 class Data(BaseModel):
+    """
+    Modèle de données pour les données d'entrée utilisées dans les prédictions.
+    """
     Dates: str
     DayOfWeek: str
     PdDistrict: str
@@ -22,6 +25,9 @@ class Data(BaseModel):
 
 
 class AI:
+    """
+    Classe AI pour l'entraînement et la prédiction des résultats des enquêtes criminelles à San Francisco.
+    """
     train_file_path: str
     test_file_path: str
 
@@ -45,9 +51,11 @@ class AI:
 
     def __init__(self, directory: str, train_file: str, test_file: str) -> None:
         """
-        Initialise les modèles de classification.
-        :param train_file: Fichier CSV contenant les données d'entraînement.
-        :param test_file: Fichier CSV contenant les données de test.
+        Initialise la classe AI avec les données d'entraînement et de test.
+
+        :param directory: Répertoire contenant les fichiers CSV.
+        :param train_file: Fichier CSV avec les données d'entraînement.
+        :param test_file: Fichier CSV avec les données de test.
         """
         self.train_file_path = os.path.join(directory, train_file)
         self.test_file_path = os.path.join(directory, test_file)
@@ -56,9 +64,9 @@ class AI:
         self.df_test = pd.read_csv(self.test_file_path)
 
         if self.df_test is None or self.df_train is None:
-            raise Exception("One of the dataframes is empty")
+            raise Exception("L'un des DataFrames est vide")
 
-        # Categorize 'Resolution' into broader categories
+        # Catégoriser 'Resolution' en catégories plus larges
         self.df_train['Categorie'] = ''
         self.df_train.loc[self.df_train['Resolution'].isin(
             ['ARREST, BOOKED', 'ARREST, CITED', 'JUVENILE CITED', 'JUVENILE BOOKED', 'PROSECUTED FOR LESSER OFFENSE',
@@ -74,7 +82,8 @@ class AI:
 
         df_train_patch = self.df_train[['Dates', 'Categorie', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']]
         df_test_patch = self.df_test[
-            ['Dates', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']]  # todo : check if this is correct
+            ['Dates', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']
+        ]  # todo : vérifier si c'est correct
 
         categorical_features = [col for col in df_train_patch.columns if self.df_train[col].dtype == 'object']
         self.encoder = OrdinalEncoder(cols=categorical_features).fit(df_train_patch)
@@ -91,38 +100,38 @@ class AI:
         X = df_train_patch_sample.drop(['Categorie'], axis=1)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-        # Decision Tree
+        # Arbre de décision
         self.clf = tree.DecisionTreeClassifier().fit(X_train, y_train)
         self.acctree = self.clf.score(X_test, y_test) * 100
-        print(f'Decision Tree Accuracy: {self.acctree:.2f}%')
+        print(f'Précision de l\'arbre de décision: {self.acctree:.2f}%')
 
-        # Random Forest
+        # Forêt aléatoire
         self.rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42).fit(X_train, y_train)
         self.accrf = accuracy_score(y_test, self.rf_classifier.predict(X_test)) * 100
-        print(f'Random Forest Accuracy: {self.accrf:.2f}%')
+        print(f'Précision de la forêt aléatoire: {self.accrf:.2f}%')
 
         # K-Nearest Neighbors
         self.knn = KNeighborsClassifier(n_neighbors=2).fit(X_train, y_train)
         self.accknn = accuracy_score(y_test, self.knn.predict(X_test)) * 100
-        print(f'KNN Accuracy: {self.accknn:.2f}%')
+        print(f'Précision du KNN: {self.accknn:.2f}%')
 
-    def predict(self, data: Data):
+    def predict(self, d: Data):
         """
         Prédit l'issue de l'enquête d'un crime à San Francisco.
-        :param new_data: Nouvelles données à prédire.
+
+        :param d: Nouvelles données à prédire.
         :return: Prédiction de l'issue de l'enquête.
         """
-
         warnings.filterwarnings("ignore", category=FutureWarning,
                                 message=".*Downcasting object dtype arrays on .fillna.*")
 
         new_data: dict = {
-            'Dates': [data.Dates],
-            'DayOfWeek': [data.DayOfWeek],
-            'PdDistrict': [data.PdDistrict],
-            'Address': [data.Address],
-            'X': [data.X],
-            'Y': [data.Y],
+            'Dates': [d.Dates],
+            'DayOfWeek': [d.DayOfWeek],
+            'PdDistrict': [d.PdDistrict],
+            'Address': [d.Address],
+            'X': [d.X],
+            'Y': [d.Y],
             "Categorie": [None]
         }
 
@@ -151,6 +160,11 @@ class AI:
         return final_prediction_text
 
     def get_accuracy(self) -> dict:
+        """
+        Obtient la précision des modèles entraînés.
+
+        :return: Dictionnaire contenant la précision de chaque modèle et la précision globale.
+        """
         return {
             'tree': self.acctree,
             'rf': self.accrf,
