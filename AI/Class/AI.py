@@ -28,20 +28,32 @@ class AI:
     """
     Classe AI pour l'entraînement et la prédiction des résultats des enquêtes criminelles à San Francisco.
     """
+    # Chemin du fichier d'entraînement
     train_file_path: str
+    # Chemin du fichier de test
     test_file_path: str
 
+    # DataFrame pour les données d'entraînement
     df_train: pd.DataFrame
+    # DataFrame pour les données de test
     df_test: pd.DataFrame
 
+    # Encodeur ordinal pour les caractéristiques catégorielles
     encoder: OrdinalEncoder
+    # Classificateur d'arbre de décision
     clf: tree.DecisionTreeClassifier
+    # Classificateur de forêt aléatoire
     rf_classifier: RandomForestClassifier
+    # Classificateur K-Nearest Neighbors
     knn: KNeighborsClassifier
+    # Précision de l'arbre de décision
     acctree: float
+    # Précision de la forêt aléatoire
     accrf: float
+    # Précision du K-Nearest Neighbors
     accknn: float
 
+    # Mappage des prédictions aux catégories
     prediction_mapping: dict = {
         0: 'Arrestation / Poursuites',
         1: 'Absence de poursuites / Refus / Cas particuliers',
@@ -128,9 +140,11 @@ class AI:
         :param d: Nouvelles données à prédire.
         :return: Prédiction de l'issue de l'enquête.
         """
+        # Ignorer les avertissements de type FutureWarning liés à la méthode fillna
         warnings.filterwarnings("ignore", category=FutureWarning,
                                 message=".*Downcasting object dtype arrays on .fillna.*")
 
+        # Préparer les nouvelles données sous forme de dictionnaire
         new_data: dict = {
             'Dates': [d.Dates],
             'DayOfWeek': [d.DayOfWeek],
@@ -141,17 +155,22 @@ class AI:
             "Categorie": [None]
         }
 
+        # Convertir les nouvelles données en DataFrame pandas
         new_df = pd.DataFrame(new_data)
+        # Encoder les nouvelles données et supprimer la colonne 'Categorie'
         new_df_encoded = self.encoder.transform(new_df).drop(columns=['Categorie'])
 
+        # Faire des prédictions avec les trois modèles
         tree_prediction = self.clf.predict(new_df_encoded)
         rf_prediction = self.rf_classifier.predict(new_df_encoded)
         knn_prediction = self.knn.predict(new_df_encoded)
 
+        # Compter les prédictions de chaque modèle
         predictions = [tuple(tree_prediction), tuple(rf_prediction), tuple(knn_prediction)]
         prediction_counts = Counter(predictions)
         most_common_prediction, count = prediction_counts.most_common(1)[0]
 
+        # Si les modèles ne sont pas d'accord, choisir le modèle le plus précis
         if count == 1:
             accuracies = {'tree': self.acctree, 'rf': self.accrf, 'knn': self.accknn}
             most_accurate_model = max(accuracies, key=accuracies.get)
@@ -159,10 +178,13 @@ class AI:
         else:
             final_prediction = most_common_prediction
 
+        # Convertir la prédiction finale en entier
         final_prediction = int(final_prediction[0])
 
+        # Obtenir le texte de la prédiction finale à partir du mappage
         final_prediction_text = self.prediction_mapping.get(final_prediction, "Catégorie inconnue")
 
+        # Retourner le texte de la prédiction finale
         return final_prediction_text
 
     def get_accuracy(self) -> dict:
@@ -172,15 +194,21 @@ class AI:
         :return: Dictionnaire contenant la précision de chaque modèle et la précision globale.
         """
         return {
-            'tree': self.acctree,
-            'rf': self.accrf,
-            'knn': self.accknn,
-            'global_accuracy': (self.acctree + self.accrf + self.accknn) / 3
+            'tree': self.acctree,  # Précision de l'arbre de décision
+            'rf': self.accrf,      # Précision de la forêt aléatoire
+            'knn': self.accknn,    # Précision du K-Nearest Neighbors
+            'global_accuracy': (self.acctree + self.accrf + self.accknn) / 3  # Précision globale moyenne
         }
 
 
+# Point d'entrée principal du script
 if __name__ == "__main__":
+    # Crée une instance de la classe AI avec les chemins des fichiers d'entraînement et de test
     ai = AI("./../DataSet", "train.csv", "test.csv")
+
+    # Crée un objet Data avec des valeurs d'exemple
     data = Data(Dates="2015-05-13 23:53:00", DayOfWeek="Wednesday", PdDistrict="SOUTHERN",
                 Address="800 Block of BRYANT ST", X=-122.403405, Y=37.775421)
+
+    # Prédit l'issue de l'enquête criminelle et affiche le résultat
     print(ai.predict(data))
