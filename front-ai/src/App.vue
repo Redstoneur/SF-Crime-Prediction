@@ -7,6 +7,17 @@ const pdDistrict = ref<string>("");
 const adresse = ref<string>("");
 const longitude = ref<number | null>();
 const latitude = ref<number | null>();
+const resultPrediction = ref<ResultPrediction>({
+  prediction: "",
+  data: {
+    Dates: "",
+    DayOfWeek: "",
+    Adresse: "",
+    PdDistrict: "",
+    X: 0,
+    Y: 0,
+  },
+});
 
 interface DateCustom {
   annee: number;
@@ -29,9 +40,18 @@ interface PostData {
   position: Position;
 }
 
-interface ApiResponse {
-  prediction: object;
-  data: object;
+interface DataResult {
+  Dates: string;
+  DayOfWeek: string;
+  Adresse: string;
+  PdDistrict: string;
+  X: number;
+  Y: number;
+}
+
+interface ResultPrediction {
+  prediction: string;
+  data: DataResult;
 }
 
 // Fonction pour formater la date dans le format requis
@@ -76,9 +96,9 @@ const submitData = (e: Event) => {
     position,
   };
 
-  async function postData(url: string, data: PostData): Promise<ApiResponse> {
+  async function postData(url: string, data: PostData): Promise<ResultPrediction> {
     try {
-      const response: AxiosResponse<ApiResponse> = await axios.post(url, data);
+      const response: AxiosResponse<ResultPrediction> = await axios.post(url, data);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -95,59 +115,90 @@ const submitData = (e: Event) => {
 
   postData("http://localhost:8000/predict", <PostData>data)
     .then((response) => {
-      console.log("Response from API:", response);
+      // console.log("Response from API:", response);
+      resultPrediction.value = response as ResultPrediction;
     })
     .catch((error) => {
       console.error("Error:", error);
+      resultPrediction.value = {
+        prediction: "",
+        data: {
+          Dates: "",
+          DayOfWeek: "",
+          Adresse: "",
+          PdDistrict: "",
+          X: 0,
+          Y: 0,
+        },
+      } as ResultPrediction;
     });
-  pdDistrict.value = "";
-  adresse.value = "";
-  longitude.value = null;
-  latitude.value = null;
+
+  // todo : vider les champs après l'envoi
+  // pdDistrict.value = "";
+  // adresse.value = "";
+  // longitude.value = null;
+  // latitude.value = null;
 };
 </script>
 
 <template>
   <div class="container">
     <h1>Front de l'application</h1>
-    {{ date }}
 
-    <form @submit="submitData">
-      <div class="form-group">
-        <label for="date">Horodatage de l'incident criminel</label>
 
-        <input type="datetime-local" name="date" id="date" v-model="date" />
+    <div class="main">
+      <form @submit="submitData">
+        <div class="form-group">
+          <label for="date">Horodatage de l'incident criminel</label>
+          <input type="datetime-local" name="date" id="date" v-model="date" step="1"/>
+        </div>
+
+        <div class="form-group">
+          <label for="nom">Nom du district de police</label>
+          <input type="text" name="nom" id="nom" v-model="pdDistrict" />
+        </div>
+
+        <div class="form-group">
+          <label for="adresse">
+            Adresse approximative de l'incident criminel
+          </label>
+          <input type="text" name="adresse" id="adresse" v-model="adresse" />
+        </div>
+
+        <div class="form-group">
+          <label for="longitude">Longitude</label>
+          <input
+            type="number"
+            step="any"
+            name="longitude"
+            id="longitude"
+            v-model="longitude"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="latitude">Latitude</label>
+          <input
+              type="number"
+              step="any"
+              name="latitude"
+              id="latitude"
+              v-model="latitude"
+          />
+        </div>
+
+        <button type="submit">Envoyer</button>
+      </form>
+
+      <div v-if="resultPrediction.prediction" class="result">
+        <h2>Données de l'incident criminel</h2>
+        <li v-for="(value, key) in resultPrediction.data" :key="key">
+          <strong>{{ key }}:</strong> {{ value }}
+        </li>
+        <h2>Résultat de la prédiction</h2>
+        <p>{{ resultPrediction.prediction }}</p>
       </div>
-
-      <div class="form-group">
-        <label for="nom">Nom du district de police</label>
-        <input type="text" name="nom" id="nom" v-model="pdDistrict" />
-      </div>
-
-      <div class="form-group">
-        <label for="adresse"
-          >Adresse approximative de l'incident criminel</label
-        >
-        <input type="text" name="adresse" id="adresse" v-model="adresse" />
-      </div>
-
-      <div class="form-group">
-        <label for="longitude">Longitude</label>
-        <input
-          type="number"
-          name="longitude"
-          id="longitude"
-          v-model="longitude"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="latitude">Latitude</label>
-        <input type="number" name="latitude" id="latitude" v-model="latitude" />
-      </div>
-
-      <button type="submit">Envoyer</button>
-    </form>
+    </div>
   </div>
 </template>
 
@@ -202,6 +253,22 @@ const submitData = (e: Event) => {
         }
       }
     }
+  }
+
+  .result {
+    margin-left: 100px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 </style>
