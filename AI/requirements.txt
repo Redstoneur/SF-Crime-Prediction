@@ -3,3 +3,6 @@ pydantic
 uvicorn
 datetime
 geopy
+pandas
+category_encoders
+scikit-learn

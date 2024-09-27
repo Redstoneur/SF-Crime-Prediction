@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from Class.AI import AI, Data
 from Class.Address import Address
 
 
@@ -51,12 +51,14 @@ class Date(BaseModel):
         except ValueError:
             return False
 
+
 class Position(BaseModel):
     """
     Modèle Pydantic représentant une position avec des attributs de latitude et de longitude.
     """
     latitude: float
     longitude: float
+
 
 class Crime(BaseModel):
     """
@@ -66,6 +68,7 @@ class Crime(BaseModel):
     pdDistrict: str
     adresse: str
     position: Position
+
 
 class Crime2(BaseModel):
     """
@@ -100,6 +103,9 @@ class MyAPI(FastAPI):
             allow_headers=["*"],  # Permettre tous les en-têtes
         )
         self.add_routes()
+        print("Initialisation de l'IA...")
+        self.ai = AI("./DataSet", "train.csv", "test.csv")
+        print("IA initialisée.")
 
     def add_routes(self):
         """
@@ -146,17 +152,17 @@ class MyAPI(FastAPI):
                                            "]"
                                     )
 
-            data: dict[str, str] = {
-                "dates": crime.dates.__str__(),
-                "joursDeLaSemaine": crime.dates.__dayOfWeek__(),
-                "pdDistrict": crime.pdDistrict,
-                "adresse": crime.adresse,
-                "x": str(crime.position.latitude),
-                "y": str(crime.position.longitude)
-            }
+            data: Data = Data(
+                Dates=crime.dates.__str__(),
+                DayOfWeek=crime.dates.__dayOfWeek__(),
+                PdDistrict=crime.pdDistrict,
+                Address=crime.adresse,
+                X=crime.position.latitude,
+                Y=crime.position.longitude
+            )
 
             # Prédire le crime à San Francisco
-            prediction = "EN COURS DE DÉVELOPPEMENT"
+            prediction = self.ai.predict(data)
 
             # Retourner la prédiction
             return {
@@ -191,17 +197,17 @@ class MyAPI(FastAPI):
                 # Retourner une erreur si l'adresse est invalide
                 raise HTTPException(status_code=400, detail="L'adresse est invalide.")
 
-            data: dict[str, str] = {
-                "dates": crime.dates.__str__(),
-                "joursDeLaSemaine": crime.dates.__dayOfWeek__(),
-                "pdDistrict": crime.pdDistrict,
-                "adresse": addr.address,
-                "x": str(addr.latitude),
-                "y": str(addr.longitude)
-            }
+            data: Data = Data(
+                Dates=crime.dates.__str__(),
+                DayOfWeek=crime.dates.__dayOfWeek__(),
+                PdDistrict=crime.pdDistrict,
+                Address=crime.adresse,
+                X=crime.position.latitude,
+                Y=crime.position.longitude
+            )
 
             # Prédire le crime à San Francisco
-            prediction = "EN COURS DE DÉVELOPPEMENT"
+            prediction = self.ai.predict(data)
 
             # Retourner la prédiction
             return {
