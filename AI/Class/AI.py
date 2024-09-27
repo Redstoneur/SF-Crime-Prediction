@@ -36,6 +36,13 @@ class AI:
     accrf: float
     accknn: float
 
+    prediction_mapping: dict = {
+        0: 'Arrestation / Poursuites',
+        1: 'Absence de poursuites / Refus / Cas particuliers',
+        2: 'Localisation / État de la personne',
+        3: 'Indépendant (NONE)'
+    }
+
     def __init__(self, directory: str, train_file: str, test_file: str) -> None:
         """
         Initialise les modèles de classification.
@@ -55,15 +62,15 @@ class AI:
         self.df_train['Categorie'] = ''
         self.df_train.loc[self.df_train['Resolution'].isin(
             ['ARREST, BOOKED', 'ARREST, CITED', 'JUVENILE CITED', 'JUVENILE BOOKED', 'PROSECUTED FOR LESSER OFFENSE',
-             'PROSECUTED BY OUTSIDE AGENCY']), 'Categorie'] = 'Arrestation / Poursuites'
+             'PROSECUTED BY OUTSIDE AGENCY']), 'Categorie'] = self.prediction_mapping[0]
         self.df_train.loc[self.df_train['Resolution'].isin(
             ['COMPLAINANT REFUSES TO PROSECUTE', 'DISTRICT ATTORNEY REFUSES TO PROSECUTE', 'NOT PROSECUTED',
              'JUVENILE ADMONISHED', 'JUVENILE DIVERTED', 'CLEARED-CONTACT JUVENILE FOR MORE INFO', 'PSYCHOPATHIC CASE',
-             'EXCEPTIONAL CLEARANCE']), 'Categorie'] = 'Absence de poursuites / Refus / Cas particuliers'
+             'EXCEPTIONAL CLEARANCE']), 'Categorie'] = self.prediction_mapping[1]
         self.df_train.loc[
             self.df_train['Resolution'].isin(
-                ['LOCATED', 'UNFOUNDED']), 'Categorie'] = 'Localisation / État de la personne'
-        self.df_train.loc[self.df_train['Resolution'].isin(['NONE']), 'Categorie'] = 'Indépendant (NONE)'
+                ['LOCATED', 'UNFOUNDED']), 'Categorie'] = self.prediction_mapping[2]
+        self.df_train.loc[self.df_train['Resolution'].isin(['NONE']), 'Categorie'] = self.prediction_mapping[3]
 
         df_train_patch = self.df_train[['Dates', 'Categorie', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']]
         df_test_patch = self.df_test[
@@ -139,16 +146,17 @@ class AI:
 
         final_prediction = int(final_prediction[0])
 
-        prediction_mapping = {
-            0: 'Arrestation / Poursuites',
-            1: 'Absence de poursuites / Refus / Cas particuliers',
-            2: 'Localisation / État de la personne',
-            3: 'Indépendant (NONE)'
-        }
-
-        final_prediction_text = prediction_mapping.get(final_prediction, "Catégorie inconnue")
+        final_prediction_text = self.prediction_mapping.get(final_prediction, "Catégorie inconnue")
 
         return final_prediction_text
+
+    def get_accuracy(self) -> dict:
+        return {
+            'tree': self.acctree,
+            'rf': self.accrf,
+            'knn': self.accknn,
+            'global_accuracy': (self.acctree + self.accrf + self.accknn) / 3
+        }
 
 
 if __name__ == "__main__":
