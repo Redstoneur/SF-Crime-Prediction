@@ -215,6 +215,13 @@ class MyAPI(FastAPI):
                 "data": data
             }
 
+        @self.get("/accuracy")
+        def get_accuracy():
+            """
+            Point de terminaison GET qui retourne les précisions des modèles.
+            """
+            return self.ai.get_accuracy()
+
 
 # Crée une instance de l'application FastAPI
 app = MyAPI()
