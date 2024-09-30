@@ -96,9 +96,15 @@ const submitData = (e: Event) => {
     position,
   };
 
-  async function postData(url: string, data: PostData): Promise<ResultPrediction> {
+  async function postData(
+    url: string,
+    data: PostData
+  ): Promise<ResultPrediction> {
     try {
-      const response: AxiosResponse<ResultPrediction> = await axios.post(url, data);
+      const response: AxiosResponse<ResultPrediction> = await axios.post(
+        url,
+        data
+      );
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -145,12 +151,17 @@ const submitData = (e: Event) => {
   <div class="container">
     <h1>Front de l'application</h1>
 
-
     <div class="main">
       <form @submit="submitData">
         <div class="form-group">
           <label for="date">Horodatage de l'incident criminel</label>
-          <input type="datetime-local" name="date" id="date" v-model="date" step="1"/>
+          <input
+            type="datetime-local"
+            name="date"
+            id="date"
+            v-model="date"
+            step="1"
+          />
         </div>
 
         <div class="form-group">
@@ -179,15 +190,15 @@ const submitData = (e: Event) => {
         <div class="form-group">
           <label for="latitude">Latitude</label>
           <input
-              type="number"
-              step="any"
-              name="latitude"
-              id="latitude"
-              v-model="latitude"
+            type="number"
+            step="any"
+            name="latitude"
+            id="latitude"
+            v-model="latitude"
           />
         </div>
 
-        <button type="submit">Prédire</button>
+        <button type="submit" aria-label="submit">Prédire</button>
       </form>
 
       <div v-if="resultPrediction.prediction" class="result">
