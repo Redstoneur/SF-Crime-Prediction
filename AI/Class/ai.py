@@ -1,6 +1,6 @@
-#######################################################################################################################
-### Importation des modules nécessaires ###############################################################################
-#######################################################################################################################
+####################################################################################################
+### Importation des modules nécessaires ############################################################
+####################################################################################################
 
 import os
 import warnings
@@ -16,9 +16,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 
 
-#######################################################################################################################
-### Modèle de données #################################################################################################
-#######################################################################################################################
+####################################################################################################
+### Modèle de données ##############################################################################
+####################################################################################################
 
 class Data(BaseModel):
     """
@@ -32,13 +32,14 @@ class Data(BaseModel):
     Y: float
 
 
-#######################################################################################################################
-### Classe AI #########################################################################################################
-#######################################################################################################################
+####################################################################################################
+### Classe AI ######################################################################################
+####################################################################################################
 
 class AI:
     """
-    Classe AI pour l'entraînement et la prédiction des résultats des enquêtes criminelles à San Francisco.
+    Classe AI pour l'entraînement et la prédiction des résultats des enquêtes criminelles
+    à San Francisco.
     """
     # Chemin du fichier d'entraînement
     train_file_path: str
@@ -94,26 +95,36 @@ class AI:
 
         # Catégoriser 'Resolution' en catégories plus larges
         self.df_train['Categorie'] = ''
-        self.df_train.loc[self.df_train['Resolution'].isin(
-            ['ARREST, BOOKED', 'ARREST, CITED', 'JUVENILE CITED', 'JUVENILE BOOKED', 'PROSECUTED FOR LESSER OFFENSE',
-             'PROSECUTED BY OUTSIDE AGENCY']), 'Categorie'] = self.prediction_mapping[0]
-        self.df_train.loc[self.df_train['Resolution'].isin(
-            ['COMPLAINANT REFUSES TO PROSECUTE', 'DISTRICT ATTORNEY REFUSES TO PROSECUTE', 'NOT PROSECUTED',
-             'JUVENILE ADMONISHED', 'JUVENILE DIVERTED', 'CLEARED-CONTACT JUVENILE FOR MORE INFO', 'PSYCHOPATHIC CASE',
-             'EXCEPTIONAL CLEARANCE']), 'Categorie'] = self.prediction_mapping[1]
-        self.df_train.loc[
-            self.df_train['Resolution'].isin(
-                ['LOCATED', 'UNFOUNDED']), 'Categorie'] = self.prediction_mapping[2]
-        self.df_train.loc[self.df_train['Resolution'].isin(['NONE']), 'Categorie'] = self.prediction_mapping[3]
+        self.df_train.loc[self.df_train['Resolution'].isin([
+            'ARREST, BOOKED', 'ARREST, CITED', 'JUVENILE CITED',
+            'JUVENILE BOOKED', 'PROSECUTED FOR LESSER OFFENSE',
+             'PROSECUTED BY OUTSIDE AGENCY'
+        ]), 'Categorie'] = self.prediction_mapping[0]
+        self.df_train.loc[self.df_train['Resolution'].isin([
+            'COMPLAINANT REFUSES TO PROSECUTE', 'DISTRICT ATTORNEY REFUSES TO PROSECUTE',
+            'NOT PROSECUTED','JUVENILE ADMONISHED', 'JUVENILE DIVERTED',
+            'CLEARED-CONTACT JUVENILE FOR MORE INFO', 'PSYCHOPATHIC CASE',
+            'EXCEPTIONAL CLEARANCE'
+        ]), 'Categorie'] = self.prediction_mapping[1]
+        self.df_train.loc[self.df_train['Resolution'].isin([
+                'LOCATED', 'UNFOUNDED'
+        ]), 'Categorie'] = self.prediction_mapping[2]
+        self.df_train.loc[self.df_train['Resolution'].isin([
+            'NONE'
+        ]), 'Categorie'] = self.prediction_mapping[3]
 
         # Créer des sous-ensembles des DataFrames pour l'entraînement et le test
-        df_train_patch = self.df_train[['Dates', 'Categorie', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']]
+        df_train_patch = self.df_train[
+            ['Dates', 'Categorie', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']
+        ]
         df_test_patch = self.df_test[
             ['Dates', 'DayOfWeek', 'PdDistrict', 'Address', 'X', 'Y']
         ]  # todo : vérifier si c'est correct
 
         # Encoder les caractéristiques catégorielles
-        categorical_features = [col for col in df_train_patch.columns if self.df_train[col].dtype == 'object']
+        categorical_features = [
+            col for col in df_train_patch.columns if self.df_train[col].dtype == 'object'
+        ]
         self.encoder = OrdinalEncoder(cols=categorical_features).fit(df_train_patch)
         df_train_patch_2 = self.encoder.transform(df_train_patch)
 
@@ -128,7 +139,9 @@ class AI:
         # Séparer les caractéristiques (X) et les étiquettes (y)
         y = df_train_patch_sample.Categorie
         x = df_train_patch_sample.drop(['Categorie'], axis=1)
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
+        x_train, x_test, y_train, y_test = train_test_split(
+            x, y, test_size=0.33, random_state=42
+        )
 
         # Entraîner un arbre de décision
         self.clf = tree.DecisionTreeClassifier().fit(x_train, y_train)
@@ -137,7 +150,9 @@ class AI:
 
         # Entraîner une forêt aléatoire
         # noinspection PyTypeChecker
-        self.rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42).fit(x_train, y_train)
+        self.rf_classifier = RandomForestClassifier(
+            n_estimators=100, random_state=42
+        ).fit(x_train, y_train)
         self.accrf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
         print(f'Précision de la forêt aléatoire: {self.accrf:.2f}%')
 
@@ -210,13 +225,15 @@ class AI:
             'tree': self.acctree,  # Précision de l'arbre de décision
             'rf': self.accrf,  # Précision de la forêt aléatoire
             'knn': self.accknn,  # Précision du K-Nearest Neighbors
-            'global_accuracy': (self.acctree + self.accrf + self.accknn) / 3  # Précision globale moyenne
+            'global_accuracy': (
+                                       self.acctree + self.accrf + self.accknn
+                               ) / 3  # Précision globale moyenne
         }
 
 
-#######################################################################################################################
-### Test d'utilisation ################################################################################################
-#######################################################################################################################
+####################################################################################################
+### Test d'utilisation #############################################################################
+####################################################################################################
 
 # Point d'entrée principal du script
 if __name__ == "__main__":
@@ -230,6 +247,6 @@ if __name__ == "__main__":
     # Prédit l'issue de l'enquête criminelle et affiche le résultat
     print(ai.predict(data))
 
-#######################################################################################################################
-### Fin du fichier AI.py ##############################################################################################
-#######################################################################################################################
+####################################################################################################
+### Fin du fichier ai.py ###########################################################################
+####################################################################################################

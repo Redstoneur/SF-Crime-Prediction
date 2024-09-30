@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from Class.AI import AI, Data
+from Class.ai import AI, Data
 from Class.address import Address
 
 
