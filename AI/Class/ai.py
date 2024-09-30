@@ -96,7 +96,6 @@ class AI:
             test_file_path=os.path.join(directory, test_file)
         )
         self.categorize_data()
-        self.encode_data()
         self.sample_data()
         self.train_models()
 
@@ -134,7 +133,7 @@ class AI:
             'NONE'
         ]), 'Categorie'] = self.prediction_mapping[3]
 
-    def encode_data(self):
+    def encode_data(self) -> pd.DataFrame:
         """
         Encode categorical features.
         """
@@ -145,44 +144,50 @@ class AI:
             col for col in df_train_patch.columns if self.df_train[col].dtype == 'object'
         ]
         self.encoder = OrdinalEncoder(cols=categorical_features).fit(df_train_patch)
-        self.df_train_patch_2 = self.encoder.transform(df_train_patch)
+        df_train_patch_2 = self.encoder.transform(df_train_patch)
+        return df_train_patch_2
 
-    def sample_data(self):
-        """Sample data to balance classes."""
+    def sample_data(self) -> pd.DataFrame:
+        """
+        Échantillonne les données pour équilibrer les classes.
+        """
         nb = 25000
-        self.df_train_patch_sample = pd.concat([
-            self.df_train_patch_2[self.df_train_patch_2.Categorie == i].sample(
-                min(nb, len(self.df_train_patch_2[self.df_train_patch_2.Categorie == i])),
+        df_train_patch_2: pd.DataFrame = self.encode_data()
+        df_train_patch_sample = pd.concat([
+            df_train_patch_2[df_train_patch_2.Categorie == i].sample(
+                min(nb, len(df_train_patch_2[df_train_patch_2.Categorie == i])),
                 replace=True)
             for i in range(4)
         ])
+        return df_train_patch_sample
 
     def train_models(self):
         """
         Entraîne les modèles d'arbre de décision, de forêt aléatoire et de KNN.
         """
-        y = self.df_train_patch_sample.Categorie
-        x = self.df_train_patch_sample.drop(['Categorie'], axis=1)
+        df_train_patch_sample: pd.DataFrame = self.sample_data()
+        y = df_train_patch_sample.Categorie
+        x = df_train_patch_sample.drop(['Categorie'], axis=1)
         x_train, x_test, y_train, y_test = train_test_split(
             x, y, test_size=0.33, random_state=42
         )
 
         self.clf = tree.DecisionTreeClassifier().fit(x_train, y_train)
-        acctree = self.clf.score(x_test, y_test) * 100
-        print(f'Précision de l\'arbre de décision: {acctree:.2f}%')
+        accuracy_tree = self.clf.score(x_test, y_test) * 100
+        print(f'Précision de l\'arbre de décision: {accuracy_tree:.2f}%')
 
         # noinspection PyTypeChecker
         self.rf_classifier = RandomForestClassifier(
             n_estimators=100, random_state=42
         ).fit(x_train, y_train)
-        accrf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
-        print(f'Précision de la forêt aléatoire: {accrf:.2f}%')
+        accuracy_rf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
+        print(f'Précision de la forêt aléatoire: {accuracy_rf:.2f}%')
 
         self.knn = KNeighborsClassifier(n_neighbors=2).fit(x_train, y_train)
-        accknn = accuracy_score(y_test, self.knn.predict(x_test)) * 100
-        print(f'Précision du KNN: {accknn:.2f}%')
+        accuracy_knn = accuracy_score(y_test, self.knn.predict(x_test)) * 100
+        print(f'Précision du KNN: {accuracy_knn:.2f}%')
 
-        self.acc = ModelAccuracy(tree=acctree, rf=accrf, knn=accknn)
+        self.acc = ModelAccuracy(tree=accuracy_tree, rf=accuracy_rf, knn=accuracy_knn)
 
     def predict(self, d: Data):
         """
