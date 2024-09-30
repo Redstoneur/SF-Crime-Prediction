@@ -187,7 +187,7 @@ const submitData = (e: Event) => {
           />
         </div>
 
-        <button type="submit">Envoyer</button>
+        <button type="submit">Prédire</button>
       </form>
 
       <div v-if="resultPrediction.prediction" class="result">
