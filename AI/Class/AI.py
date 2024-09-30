@@ -67,10 +67,10 @@ class AI:
 
     # Mappage des prédictions aux catégories
     prediction_mapping: dict = {
-        0: 'Arrestation / Poursuites',
-        1: 'Absence de poursuites / Refus / Cas particuliers',
-        2: 'Localisation / État de la personne',
-        3: 'Indépendant (NONE)'
+        0: 'Arrestation ou Poursuites Judiciaires',
+        1: 'Aucune Poursuite ou Refus de Poursuite',
+        2: 'Personne Localisée ou Cas Non Fondé',
+        3: 'Aucune Action Juridique Prise'
     }
 
     def __init__(self, directory: str, train_file: str, test_file: str) -> None:
