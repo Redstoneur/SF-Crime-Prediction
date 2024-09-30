@@ -37,6 +37,18 @@ class Data(BaseModel):
     Y: float
 
 
+class ModelAccuracy(BaseModel):
+    """
+    Modèle de données pour la précision des modèles entraînés.
+    """
+    # Précision de l'arbre de décision
+    tree: float
+    # Précision de la forêt aléatoire
+    rf: float
+    # Précision du K-Nearest Neighbors
+    knn: float
+
+
 ####################################################################################################
 ### Classe AI ######################################################################################
 ####################################################################################################
@@ -46,11 +58,6 @@ class AI:
     Classe AI pour l'entraînement et la prédiction des résultats des enquêtes criminelles
     à San Francisco.
     """
-    # Chemin du fichier d'entraînement
-    train_file_path: str
-    # Chemin du fichier de test
-    test_file_path: str
-
     # DataFrame pour les données d'entraînement
     df_train: pd.DataFrame
     # DataFrame pour les données de test
@@ -64,12 +71,8 @@ class AI:
     rf_classifier: RandomForestClassifier
     # Classificateur K-Nearest Neighbors
     knn: KNeighborsClassifier
-    # Précision de l'arbre de décision
-    acctree: float
-    # Précision de la forêt aléatoire
-    accrf: float
-    # Précision du K-Nearest Neighbors
-    accknn: float
+    # Précision des modèles entraînés
+    acc: ModelAccuracy
 
     # Mappage des prédictions aux catégories
     prediction_mapping: dict = {
@@ -87,21 +90,22 @@ class AI:
         :param train_file: Fichier CSV avec les données d'entraînement.
         :param test_file: Fichier CSV avec les données de test.
         """
-        self.train_file_path = os.path.join(directory, train_file)
-        self.test_file_path = os.path.join(directory, test_file)
 
-        self.load_data()
+        self.load_data(
+            train_file_path=os.path.join(directory, train_file),
+            test_file_path=os.path.join(directory, test_file)
+        )
         self.categorize_data()
         self.encode_data()
         self.sample_data()
         self.train_models()
 
-    def load_data(self):
+    def load_data(self, train_file_path, test_file_path):
         """
         Load training and test data from CSV files.
         """
-        self.df_train = pd.read_csv(self.train_file_path)
-        self.df_test = pd.read_csv(self.test_file_path)
+        self.df_train = pd.read_csv(train_file_path)
+        self.df_test = pd.read_csv(test_file_path)
 
         # Vérifier si l'un des DataFrames est vide
         if self.df_test is None or self.df_train is None:
@@ -164,19 +168,21 @@ class AI:
         )
 
         self.clf = tree.DecisionTreeClassifier().fit(x_train, y_train)
-        self.acctree = self.clf.score(x_test, y_test) * 100
-        print(f'Précision de l\'arbre de décision: {self.acctree:.2f}%')
+        acctree = self.clf.score(x_test, y_test) * 100
+        print(f'Précision de l\'arbre de décision: {acctree:.2f}%')
 
         # noinspection PyTypeChecker
         self.rf_classifier = RandomForestClassifier(
             n_estimators=100, random_state=42
         ).fit(x_train, y_train)
-        self.accrf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
-        print(f'Précision de la forêt aléatoire: {self.accrf:.2f}%')
+        accrf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
+        print(f'Précision de la forêt aléatoire: {accrf:.2f}%')
 
         self.knn = KNeighborsClassifier(n_neighbors=2).fit(x_train, y_train)
-        self.accknn = accuracy_score(y_test, self.knn.predict(x_test)) * 100
-        print(f'Précision du KNN: {self.accknn:.2f}%')
+        accknn = accuracy_score(y_test, self.knn.predict(x_test)) * 100
+        print(f'Précision du KNN: {accknn:.2f}%')
+
+        self.acc = ModelAccuracy(tree=acctree, rf=accrf, knn=accknn)
 
     def predict(self, d: Data):
         """
@@ -243,7 +249,7 @@ class AI:
                 'rf': predictions[1],
                 'knn': predictions[2]
             }
-            accuracies = {'tree': self.acctree, 'rf': self.accrf, 'knn': self.accknn}
+            accuracies = {'tree': self.acc.tree, 'rf': self.acc.rf, 'knn': self.acc.knn}
             most_accurate_model = max(accuracies, key=accuracies.get)
             final_prediction = model_predictions[most_accurate_model]
         else:
@@ -258,11 +264,11 @@ class AI:
         :return: Dictionnaire contenant la précision de chaque modèle et la précision globale.
         """
         return {
-            'tree': self.acctree,  # Précision de l'arbre de décision
-            'rf': self.accrf,  # Précision de la forêt aléatoire
-            'knn': self.accknn,  # Précision du K-Nearest Neighbors
+            'tree': self.acc.tree,  # Précision de l'arbre de décision
+            'rf': self.acc.rf,  # Précision de la forêt aléatoire
+            'knn': self.acc.knn,  # Précision du K-Nearest Neighbors
             'global_accuracy': (
-                                       self.acctree + self.accrf + self.accknn
+                                       self.acc.tree + self.acc.rf + self.acc.knn
                                ) / 3  # Précision globale moyenne
         }
 
