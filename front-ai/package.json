@@ -15,9 +15,12 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^25.0.1",
     "sass-embedded": "^1.79.3",
     "typescript": "^5.5.3",
     "vite": "^5.4.1",
+    "vitest": "^2.1.1",
     "vue-tsc": "^2.0.29"
   }
 }
