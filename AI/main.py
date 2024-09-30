@@ -71,7 +71,8 @@ class Position(BaseModel):
 
 class Crime(BaseModel):
     """
-    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
+    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier,
+    de catégorie et de description.
     """
     dates: Date
     pdDistrict: str
@@ -81,7 +82,8 @@ class Crime(BaseModel):
 
 class Crime2(BaseModel):
     """
-    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier, de catégorie et de description.
+    Modèle Pydantic représentant un crime avec des attributs de date, d'heure, de quartier,
+    de catégorie et de description.
     """
     dates: Date
     pdDistrict: str
@@ -108,6 +110,7 @@ class MyAPI(FastAPI):
             docs_url="/docs",  # URL pour Swagger UI
             redoc_url="/redoc"  # URL pour ReDoc
         )
+        # noinspection PyTypeChecker
         self.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],  # Permettre toutes les origines, à ajuster selon vos besoins
