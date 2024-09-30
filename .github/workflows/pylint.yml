@@ -18,6 +18,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pylint
+        pip install fastapi pydantic uvicorn datetime geopy pandas category_encoders scikit-learn
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
