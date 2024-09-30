@@ -127,22 +127,23 @@ class AI:
 
         # Séparer les caractéristiques (X) et les étiquettes (y)
         y = df_train_patch_sample.Categorie
-        X = df_train_patch_sample.drop(['Categorie'], axis=1)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+        x = df_train_patch_sample.drop(['Categorie'], axis=1)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33, random_state=42)
 
         # Entraîner un arbre de décision
-        self.clf = tree.DecisionTreeClassifier().fit(X_train, y_train)
-        self.acctree = self.clf.score(X_test, y_test) * 100
+        self.clf = tree.DecisionTreeClassifier().fit(x_train, y_train)
+        self.acctree = self.clf.score(x_test, y_test) * 100
         print(f'Précision de l\'arbre de décision: {self.acctree:.2f}%')
 
         # Entraîner une forêt aléatoire
-        self.rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42).fit(X_train, y_train)
-        self.accrf = accuracy_score(y_test, self.rf_classifier.predict(X_test)) * 100
+        # noinspection PyTypeChecker
+        self.rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42).fit(x_train, y_train)
+        self.accrf = accuracy_score(y_test, self.rf_classifier.predict(x_test)) * 100
         print(f'Précision de la forêt aléatoire: {self.accrf:.2f}%')
 
         # Entraîner un K-Nearest Neighbors
-        self.knn = KNeighborsClassifier(n_neighbors=2).fit(X_train, y_train)
-        self.accknn = accuracy_score(y_test, self.knn.predict(X_test)) * 100
+        self.knn = KNeighborsClassifier(n_neighbors=2).fit(x_train, y_train)
+        self.accknn = accuracy_score(y_test, self.knn.predict(x_test)) * 100
         print(f'Précision du KNN: {self.accknn:.2f}%')
 
     def predict(self, d: Data):
@@ -207,8 +208,8 @@ class AI:
         """
         return {
             'tree': self.acctree,  # Précision de l'arbre de décision
-            'rf': self.accrf,      # Précision de la forêt aléatoire
-            'knn': self.accknn,    # Précision du K-Nearest Neighbors
+            'rf': self.accrf,  # Précision de la forêt aléatoire
+            'knn': self.accknn,  # Précision du K-Nearest Neighbors
             'global_accuracy': (self.acctree + self.accrf + self.accknn) / 3  # Précision globale moyenne
         }
 
