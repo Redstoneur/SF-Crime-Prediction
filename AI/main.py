@@ -1,6 +1,13 @@
-#######################################################################################################################
-### Importation des modules nécessaires ###############################################################################
-#######################################################################################################################
+"""
+Module principal pour l'application de prédiction de crimes à San Francisco.
+
+Ce module initialise l'application FastAPI, configure les routes et démarre le serveur.
+Il utilise également une classe AI pour effectuer des prédictions basées sur les données fournies.
+"""
+
+####################################################################################################
+### Importation des modules nécessaires ############################################################
+####################################################################################################
 
 from datetime import datetime
 
@@ -8,13 +15,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from Class.ai import AI, Data
 from Class.address import Address
+from Class.ai import AI, Data
 
 
-#######################################################################################################################
-### Modèle de données #################################################################################################
-#######################################################################################################################
+####################################################################################################
+### Modèle de données ##############################################################################
+####################################################################################################
 
 
 class Date(BaseModel):
@@ -33,7 +40,11 @@ class Date(BaseModel):
         Retourne une chaîne de caractères représentant la date.
         :return: Chaîne de caractères représentant la date au format "AAAA-MM-JJ HH:MM:SS".
         """
-        return f"{self.annee}-{self.mois:02d}-{self.jour:02d} {self.heure:02d}:{self.minute:02d}:{self.seconde:02d}"
+        return (
+            f"{self.annee}-{self.mois:02d}-{self.jour:02d}"
+            f" "
+            f"{self.heure:02d}:{self.minute:02d}:{self.seconde:02d}"
+        )
 
     def __datetime__(self):
         """
@@ -42,14 +53,14 @@ class Date(BaseModel):
         """
         return datetime.strptime(self.__str__(), "%Y-%m-%d %H:%M:%S")
 
-    def __dayOfWeek__(self):
+    def __day_of_week__(self):
         """
         Retourne le jour de la semaine.
         :return: Jour de la semaine.
         """
         return self.__datetime__().strftime("%A")
 
-    def __isValide__(self):
+    def __is_valide__(self):
         """
         Vérifie si la date est valide.
         :return: True si la date est valide, False sinon.
@@ -90,9 +101,9 @@ class Crime2(BaseModel):
     adresse: str
 
 
-#######################################################################################################################
-### Classe personnalisée FastAPI ######################################################################################
-#######################################################################################################################
+####################################################################################################
+### Classe personnalisée FastAPI ###################################################################
+####################################################################################################
 
 class MyAPI(FastAPI):
     """
@@ -138,7 +149,8 @@ class MyAPI(FastAPI):
         @self.get("/address/{address}")
         def check_address(address: str):
             """
-            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude et sa longitude.
+            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude
+            et sa longitude.
             """
             addr: Address = Address(address)
             return {
@@ -150,11 +162,14 @@ class MyAPI(FastAPI):
             }
 
         @self.post("/address")
-        def check_address(position: Position):
+        def check_position(position: Position):
             """
-            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude et sa longitude.
+            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude
+            et sa longitude.
             """
-            addr: Address = Address.create_address_by_position((position.latitude, position.longitude))
+            addr: Address = Address.create_address_by_position(
+                (position.latitude, position.longitude)
+            )
             return {
                 "address": addr.address,
                 "valid": addr.is_valid(),
@@ -169,22 +184,23 @@ class MyAPI(FastAPI):
             Point de terminaison POST qui prédit l'issue de l'enquête d'un crime à San Francisco.
             """
 
-            if not crime.dates.__isValide__():
+            if not crime.dates.__is_valide__():
                 # Retourner une erreur si la date est invalide
                 raise HTTPException(status_code=400, detail="La date est invalide.")
 
             if crime.pdDistrict == "" or crime.adresse == "":
                 # Retourner une erreur si les informations
-                raise HTTPException(status_code=400,
-                                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
-                                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
-                                           ("adresse, " if crime.adresse == "" else "") +
-                                           "]"
-                                    )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
+                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
+                           ("adresse, " if crime.adresse == "" else "") +
+                           "]"
+                )
 
             data: Data = Data(
-                Dates=crime.dates.__str__(),
-                DayOfWeek=crime.dates.__dayOfWeek__(),
+                Dates=crime.dates,
+                DayOfWeek=crime.dates.__day_of_week__(),
                 PdDistrict=crime.pdDistrict,
                 Address=crime.adresse,
                 X=crime.position.latitude,
@@ -206,18 +222,19 @@ class MyAPI(FastAPI):
             Point de terminaison POST qui prédit l'issue de l'enquête d'un crime à San Francisco.
             """
 
-            if not crime.dates.__isValide__():
+            if not crime.dates.__is_valide__():
                 # Retourner une erreur si la date est invalide
                 raise HTTPException(status_code=400, detail="La date est invalide.")
 
             if crime.pdDistrict == "" or crime.adresse == "":
                 # Retourner une erreur si les informations
-                raise HTTPException(status_code=400,
-                                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
-                                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
-                                           ("adresse, " if crime.adresse == "" else "") +
-                                           "]"
-                                    )
+                raise HTTPException(
+                    status_code=400,
+                    detail="Les informations sont incomplètes. Veuillez les compléter: [" +
+                           ("pdDistrict, " if crime.pdDistrict == "" else "") +
+                           ("adresse, " if crime.adresse == "" else "") +
+                           "]"
+                )
 
             # Création de l'adresse
             addr = Address(crime.adresse)
@@ -228,8 +245,8 @@ class MyAPI(FastAPI):
                 raise HTTPException(status_code=400, detail="L'adresse est invalide.")
 
             data: Data = Data(
-                Dates=crime.dates.__str__(),
-                DayOfWeek=crime.dates.__dayOfWeek__(),
+                Dates=crime.dates,
+                DayOfWeek=crime.dates.__day_of_week__(),
                 PdDistrict=crime.pdDistrict,
                 Address=crime.adresse,
                 X=crime.position.latitude,
@@ -253,16 +270,16 @@ class MyAPI(FastAPI):
             return self.ai.get_accuracy()
 
 
-#######################################################################################################################
-### Point d'entrée de l'application ###################################################################################
-#######################################################################################################################
+####################################################################################################
+### Point d'entrée de l'application ################################################################
+####################################################################################################
 
 # Crée une instance de l'application FastAPI
 app = MyAPI()
 
-#######################################################################################################################
-### Test d'utilisation ################################################################################################
-#######################################################################################################################
+####################################################################################################
+### Test d'utilisation #############################################################################
+####################################################################################################
 
 
 # Si le script est exécuté directement, démarre le serveur FastAPI
@@ -273,6 +290,6 @@ if __name__ == "__main__":
     # Démarre le serveur FastAPI
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
-#######################################################################################################################
-### Fin du fichier address.py #########################################################################################
-#######################################################################################################################
+####################################################################################################
+### Fin du fichier address.py ######################################################################
+####################################################################################################
