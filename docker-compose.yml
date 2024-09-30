@@ -4,6 +4,7 @@ services:
       context: ./AI
       dockerfile: Dockerfile
     container_name: AI
+    image: sf-crime-prediction-server
     restart: always
     networks:
       ai-net:
@@ -27,7 +28,8 @@ services:
     build:
       context: ./front-ai
       dockerfile: Dockerfile
-    container_name: client
+    container_name: Client
+    image: sf-crime-prediction-client
     restart: always
     networks:
       ai-net:
