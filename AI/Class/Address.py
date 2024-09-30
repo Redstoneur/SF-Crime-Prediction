@@ -78,6 +78,17 @@ class Address:
         except (GeocoderTimedOut, GeocoderServiceError):
             return False
 
+    @staticmethod
+    def create_address_by_position(position: tuple[float, float]) -> 'Address':
+        """
+        Crée une adresse à partir d'une position.
+        :param position: Position à convertir en adresse.
+        :return: Adresse correspondant à la position.
+        """
+        geolocator = Nominatim(user_agent="geo_checker")
+        location = geolocator.reverse(position)
+        return Address(location.address)
+
 
 #######################################################################################################################
 ### Test d'utilisation ################################################################################################
@@ -98,6 +109,24 @@ if __name__ == "__main__":
             print(f"Adresse_location : {adr.address_location}")
             print(f"Latitude : {adr.latitude}, Longitude : {adr.longitude}")
         print()
+
+
+    address_test: Address = Address("63 rue d'Andrésy, Chanteloup-les-Vignes")
+    print(f"Vérification des coordonnées de l'adresse : {address_test.address}")
+    print(f"Vérification de l'adresse : {address_test.latitude}, {address_test.longitude}")
+    adr = Address.create_address_by_position((address_test.latitude, address_test.longitude))
+
+    print(adr)
+    if adr.is_valid():
+        print(f"Adresse_location : {adr.address_location}")
+        print(f"Latitude : {adr.latitude}, Longitude : {adr.longitude}")
+    print()
+
+    if address_test.address_location == adr.address_location:
+        print("Les adresses sont identiques.")
+    else:
+        print("Les adresses sont différentes.")
+
 
 #######################################################################################################################
 ### Fin du fichier Address.py #########################################################################################
