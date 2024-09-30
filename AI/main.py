@@ -135,12 +135,26 @@ class MyAPI(FastAPI):
             """
             return {"message": "Bonjour, le monde!"}
 
-        @self.get("/address")
+        @self.get("/address/{address}")
         def check_address(address: str):
             """
             Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude et sa longitude.
             """
-            addr = Address(address)
+            addr: Address = Address(address)
+            return {
+                "address": addr.address,
+                "valid": addr.is_valid(),
+                "adresse_location": addr.address_location,
+                "latitude": addr.latitude,
+                "longitude": addr.longitude
+            }
+
+        @self.post("/address")
+        def check_address(position: Position):
+            """
+            Point de terminaison POST qui vérifie la validité d'une adresse et retourne sa latitude et sa longitude.
+            """
+            addr: Address = Address.create_address_by_position((position.latitude, position.longitude))
             return {
                 "address": addr.address,
                 "valid": addr.is_valid(),
