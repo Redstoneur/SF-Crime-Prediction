@@ -199,7 +199,7 @@ class MyAPI(FastAPI):
                 )
 
             data: Data = Data(
-                Dates=crime.dates,
+                Dates=str(crime.dates),
                 DayOfWeek=crime.dates.__day_of_week__(),
                 PdDistrict=crime.pdDistrict,
                 Address=crime.adresse,
@@ -245,7 +245,7 @@ class MyAPI(FastAPI):
                 raise HTTPException(status_code=400, detail="L'adresse est invalide.")
 
             data: Data = Data(
-                Dates=crime.dates,
+                Dates=str(crime.dates),
                 DayOfWeek=crime.dates.__day_of_week__(),
                 PdDistrict=crime.pdDistrict,
                 Address=crime.adresse,
