@@ -21,6 +21,7 @@
 [//]: # (---)
 
 [//]: # ()
+
 [//]: # (![Latest Release]&#40;https://img.shields.io/github/v/release/Redstoneur/SF-Crime-Prediction&#41;)
 
 [//]: # (![Release Date]&#40;https://img.shields.io/github/release-date/Redstoneur/SF-Crime-Prediction&#41;)
@@ -31,17 +32,21 @@
 
 ## Contexte de l'Analyse
 
-Cette analyse porte sur la classification des crimes survenant dans la ville de San Francisco. Les données proviennent du système de signalement des incidents criminels du SFPD et couvrent la période du 1er janvier 2003 au 13 mai 2015. Les ensembles de données d'entraînement et de test alternent chaque semaine, avec les semaines 1, 3, 5, 7... faisant partie de l'ensemble de test et les semaines 2, 4, 6, 8 faisant partie de l'ensemble d'entraînement.
+Cette analyse porte sur la classification des crimes survenant dans la ville de San Francisco. Les données proviennent
+du système de signalement des incidents criminels du SFPD et couvrent la période du 1er janvier 2003 au 13 mai 2015. Les
+ensembles de données d'entraînement et de test alternent chaque semaine, avec les semaines 1, 3, 5, 7... faisant partie
+de l'ensemble de test et les semaines 2, 4, 6, 8 faisant partie de l'ensemble d'entraînement.
 
 ### Description des données
 
 - **Dates** : horodatage de l'incident criminel
-- **Category** : catégorie de l'incident criminel (disponible uniquement dans train.csv). C'est la variable cible à prédire.
+- **Category** : catégorie de l'incident criminel (disponible uniquement dans train.csv). C'est la variable cible à
+  prédire.
 - **Descript** : description détaillée de l'incident criminel (disponible uniquement dans train.csv)
 - **DayOfWeek** : jour de la semaine
 - **PdDistrict** : nom du district de police
 - **Resolution** : manière dont l'incident criminel a été résolu (disponible uniquement dans train.csv)
-- **Address** : adresse approximative de l'incident criminel 
+- **Address** : adresse approximative de l'incident criminel
 - **X** : Longitude
 - **Y** : Latitude
 
@@ -53,7 +58,9 @@ Cette analyse porte sur la classification des crimes survenant dans la ville de 
 
 ## Description du Projet
 
-Ce projet est une application web qui permet de prédire les crimes à San Francisco en utilisant une IA. Le projet est divisé en deux parties : le front-end développé avec Vue 3 et le back-end développé avec FastAPI et une IA pour la prédiction.
+Ce projet est une application web qui permet de prédire les crimes à San Francisco en utilisant une IA. Le projet est
+divisé en deux parties : le front-end développé avec Vue 3 et le back-end développé avec FastAPI et une IA pour la
+prédiction.
 
 ### Prérequis
 
@@ -65,8 +72,8 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
 
 #### Sans Docker
 
-> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le fichier [information.md](AI/Dataset/information.md) pour plus de détails.
-
+> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le
+> fichier [information.md](AI/Dataset/information.md) pour plus de détails.
 
 1. **Cloner le dépôt :**
 
@@ -100,7 +107,8 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
 
 #### Avec Docker
 
-> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le fichier [information.md](AI/Dataset/information.md) pour plus de détails.
+> **Note:** Assurez-vous d'ajouter les fichiers de données dans le dossier `AI/Dataset`. Consultez le
+> fichier [information.md](AI/Dataset/information.md) pour plus de détails.
 
 1. **Cloner le dépôt :**
 
@@ -117,8 +125,8 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
 
 3. **Accès à l'Application :**
 
-   - **Front-end :** [http://localhost:3000](http://localhost:3000)
-   - **Back-end :** [http://localhost:8000](http://localhost:8000)
+    - **Front-end :** [http://localhost:3000](http://localhost:3000)
+    - **Back-end :** [http://localhost:8000](http://localhost:8000)
 
 ### Structure du Projet
 
@@ -126,6 +134,25 @@ Ce projet est une application web qui permet de prédire les crimes à San Franc
 - `front-ai/` : Contient le code du front-end.
 - `docker-compose.yml` : Fichier de configuration pour Docker Compose.
 - `Dockerfile` : Fichiers Docker pour le front-end et le back-end.
+
+### Conseils pour mise à jour du Projet en Production
+
+Lors de la mise en production, d'une mise à jour des model de l'IA ou de l'application, il est recommandé de suivre les
+étapes suivantes :
+
+1. **Prévenir les Utilisateurs :** Informez les utilisateurs de la mise à jour à venir.
+2. **Créer une back-up :** Sauvegardez les données et les modèles actuels, voir sauvegardez l'ensemble de la machine.
+3. **éteindre les services :** Arrêtez les services pour éviter les pertes de données.
+    - **Sans Docker :** Arrêtez les services manuellement.
+    - **Avec Docker :** Exécutez `docker-compose down` pour arrêter les services.
+4. **Mise à jour du code :** Mettez à jour le code de l'application et de l'IA.
+    - `git pull` pour mettre à jour le code si sur `master`.
+    - `git checkout $(git describe --tags $(git rev-list --tags --max-count=1))` pour avoir la dernière version stable
+      et donc la dernière release, voir [Releases](https://github.com/Redstoneur/SF-Crime-Prediction/releases) pour
+      plus d'informations.
+5. **Mise en Production :** Redémarrez les services et vérifiez que tout fonctionne correctement.
+    - **Sans Docker :** Redémarrez les services manuellement.
+    - **Avec Docker :** Exécutez `docker-compose up --build` pour redémarrer les services.
 
 ### Licence
 
